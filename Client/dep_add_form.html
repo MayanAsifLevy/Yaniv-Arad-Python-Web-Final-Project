@@ -1,0 +1,124 @@
+<html>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+  <meta content="utf-8" http-equiv="encoding" />
+
+  <link rel = 'stylesheet' type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script>
+
+let token= sessionStorage["token"];
+let username=sessionStorage["userName"];
+
+  async function save()
+    {
+      var dep_manger = document.getElementById("dManager");
+      var dep_mangerValue= dep_manger.options[dep_manger.selectedIndex].value;
+      var depmanagerText= dep_manger.options[dep_manger.selectedIndex].text;
+      
+      let obj ={dName:     document.getElementById("dName").value,
+                dManager_id:   dep_mangerValue,
+                dManager_name:   depmanagerText
+              }  
+              
+      if (obj["dName"]== ''  ||  obj["dManager_name"]== 'Select')
+      {
+        window.alert("There is an issue with the input - please check and try again");
+
+      }
+
+      else
+      {
+        let fetchParams = {method : 'POST',
+                      body : JSON.stringify(obj),
+                      headers : {"Content-Type" : "application/json"}
+                      }
+            
+        let resp = await fetch("http://127.0.0.1:5000/departments",fetchParams, {headers: {"x-access-token": token}});
+        let data =  await resp.json();
+        if (data=="no actions left")
+        {
+          window.alert("No actions left. Please try again tomorrow");
+          location.href = "login.html";
+        }
+        else
+        {
+          document.location.href ="emp.html";
+        }
+      }
+    }
+
+  async function present_manager_list()
+  {
+      document.getElementById("username").innerHTML=username;
+      let resp = await fetch('http://127.0.0.1:5000/departments', {headers: {"x-access-token": token}});
+      let deps = await resp.json();
+      if (deps=="no actions left")
+        {
+          window.alert("No actions left. Please try again tomorrow");
+          location.href = "login.html";
+        }
+      else
+      {
+          let emp_list = deps[1] ; // list of all employees
+          let managers_list = document.getElementById("dManager");
+          let option = document.createElement("option");
+          option.text = "Select";
+          managers_list.appendChild(option);
+          emp_list.forEach( emp=>
+            {
+              let option = document.createElement("option");
+              option.text = emp["First_Name"] + " " + emp["Last_Name"];
+              option.value=emp["emp_id"];
+              managers_list.appendChild(option);
+            })
+      }
+  }
+
+  function cancel()
+  {
+    document.location.href = "department.html"
+  }
+
+  function logout()
+  {
+    document.location.href = "login.html"
+  }
+
+</script>
+
+<body onload = "present_manager_list()">  
+  
+  <h1>Add New Department </h1> 
+  <div class="top">        
+    <span></span>
+    <div class="repeat_buttons">
+      Hello, <strong><span id="username"> </span></strong>
+        <button type="button" class="btn btn-dark" id="logout" onClick="logout()">Logout</button>
+    </div>
+  </div>   
+
+  <br/> <br/>
+  <form class="myForm" style="padding: 40px">
+    <div class="form-row">
+      <div class="col">
+        <label for="dName">Department Name</label>
+        <input type="text" id= "dName" class="form-control" placeholder="Department Name">
+      </div>
+      <div class="col">
+        <label for="dManager">Department Manager</label>
+        <select name="Department_manager" id = "dManager"  class="form-control">  </select> 
+      </div>
+      
+    </div>
+  </form>
+    </div class="form-row" style="padding: 40px">
+      <div class="col" id= "button_container">
+        <button type="input" class="btn btn-dark" onclick="save()">Save</button>
+      
+        <button type="input" class="btn btn-dark" onclick="cancel()">Cancel</button>
+      </div>  
+    </div>
+
+</body>
+</html>

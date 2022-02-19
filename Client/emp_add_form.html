@@ -1,0 +1,140 @@
+<html>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge;" />
+  <meta content="utf-8" http-equiv="encoding" />
+
+  <link rel = 'stylesheet' type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script>
+
+  let token=sessionStorage["token"];
+  let username=sessionStorage["userName"];
+
+  async function save()
+  {
+    var dep = document.getElementById("myList");
+    var depValue= dep.options[dep.selectedIndex].value;
+    var depText= dep.options[dep.selectedIndex].text;
+    
+    let obj ={fName:     document.getElementById("fName").value,
+              lName:   document.getElementById("lName").value,
+              Start_work_year:  document.getElementById("Start_work_year").value,
+              department_id:  depValue,
+              department_name:  depText
+            }  
+            
+    if (obj["fName"]== '' || obj["lName"]== '' || obj["Start_work_year"]== '' ||obj["department_id"]== '' ||  obj["department_name"]== 'Select')
+    {
+      window.alert("There is an issue with the input - please check and try again");
+
+    }
+
+    else
+    {
+      let fetchParams = {method : 'POST',
+                    body : JSON.stringify(obj),
+                    headers : {"Content-Type" : "application/json"}
+                    }
+          
+    let resp = await fetch("http://127.0.0.1:5000/employees",fetchParams, {headers: {"x-access-token": token}});
+    let data =  await resp.json();
+    
+    if (data=="no actions left")
+      {
+        window.alert("No actions left. Please try again tomorrow");
+        location.href = "login.html";
+      }
+    else
+      {
+        document.location.href ="emp.html";
+      }
+
+
+    }
+  }
+
+
+  async function present_dep_list()
+  {
+    document.getElementById("username").innerHTML=username
+    let resp = await fetch('http://127.0.0.1:5000/employees', {headers: {"x-access-token": token}});
+    let emps = await resp.json();
+    
+    if (emps=="no actions left")
+      {
+        window.alert("No actions left. Please try again tomorrow");
+        location.href = "login.html";
+      }
+      else
+      {
+        let dep_list = emps[1] ;
+        let department_list = document.getElementById("myList");
+        let option = document.createElement("option");
+        option.text = "Select";
+        department_list.appendChild(option);
+        dep_list.forEach( d=>
+          {let option = document.createElement("option");
+          option.text = d["Name"];
+          option.value=d["dep_id"];
+          department_list.appendChild(option);
+          })
+      }
+  }
+
+
+  function cancel()
+  {
+    document.location.href = "emp.html";
+  }
+
+  function logout()
+  {
+    document.location.href = "login.html";
+  }
+
+</script>
+<body onload = "present_dep_list()">  
+  
+  <h1>Add New Employee </h1> 
+  
+  <div class="top">        
+    <span></span>
+    <div class="repeat_buttons">
+      Hello, <strong><span id="username"> </span></strong>
+        <button type="button" class="btn btn-dark" id="logout" onClick="logout()">Logout</button>
+    </div>
+  </div> 
+
+  <br/> <br/>
+
+  <form class="myForm" style="padding: 40px">
+    <div class="form-row">
+      <div class="col">
+        <label for="First Name">First Name</label>
+        <input type="text" id= "fName" class="form-control" placeholder="First Name">
+      </div>
+      <div class="col">
+        <label for="Last Name">Last Name</label>
+        <input type="text" id="lName" class="form-control" placeholder="Last Name">
+      </div>
+      <div class="col">
+        <label for="Start Work Year">Start Work Year</label>
+        <input type="number" id="Start_work_year" class="form-control" placeholder="Start Work Year">
+      </div>
+      <div class="col">
+        <label for="Department_ID">Department ID</label>
+        <select name="Department_ID" id = "myList"  class="form-control">  </select> 
+      </div>
+    </div>
+  </form>
+
+  <div class="form-row" style="padding: 40px">
+    <div class="col" id= "button_container">
+      <button type="input" class="btn btn-dark" onclick="save()">Save</button>
+    
+      <button type="input" class="btn btn-dark" onclick="cancel()">Cancel</button>
+    </div>  
+  </div>
+
+</body>
+</html>

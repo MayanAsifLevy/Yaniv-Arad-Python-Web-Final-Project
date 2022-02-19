@@ -1,0 +1,67 @@
+<html>
+<script>
+
+async function login()
+{
+    let username = document.getElementById("username").value;
+    let email = document.getElementById("mail").value;
+
+    let obj = { username : username, email : email};
+
+    fetchParams = {method : 'POST', 
+                   body : JSON.stringify(obj), 
+                   headers : {"Content-Type" : "application/json"} };
+
+    let resp = await fetch("http://127.0.0.1:5000/auth/login",fetchParams);
+    let data = await resp.json();
+
+    if (data==-1)
+    {
+        token=-1;
+    }
+    else
+    {
+        token=data.token;
+    }
+
+
+    if (token!=-1)
+    {
+        sessionStorage["token"] = token;
+
+        resp = await fetch("http://127.0.0.1:5000/auth/login", {headers: {"x-access-token": token}});
+        data = await resp.json();
+        if (data==="you are not authorized")
+        {
+            window.alert("This user is not authorized");
+            window.location.reload(true);
+        }
+        else if (data==="no actions left")
+        {
+            window.alert("No actions left. Please try again tomorrow");
+            window.location.reload(true);
+        }
+        else
+        {
+            sessionStorage["userName"] = data;
+            location.href = "emp.html";
+        }
+    }
+    else
+    {
+        window.alert("There is an issue with the credentials. Please try again");
+        window.location.reload(true);
+    }
+}
+
+</script>
+
+    <body>
+        
+        User Name : <input type="text" id="username"><br/>
+        email : <input type="text" id="mail"><br/>
+
+        <input type="button" value="Login" onclick="login()">
+
+    </body>
+</html>

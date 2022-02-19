@@ -1,0 +1,141 @@
+h1 {
+    text-align: center;
+
+}
+
+
+.top{
+    display: flex; 
+    flex-direction:row;
+    justify-content:space-between;
+
+} 
+
+.repeat_buttons{
+    display: flex; 
+    flex-direction:column;
+   
+
+}
+
+
+.repeat_buttons_up{
+    display: flex; 
+    flex-direction:column;
+    justify-content:space-between;
+
+}
+
+#button_container{
+text-align: center;  
+
+}
+/* 
+#myAlert_issue {
+    padding: 40px;
+    text-align: center; 
+    color: red;
+
+}
+
+#myAlert_no_issue {
+    padding: 40px;
+    text-align: center; 
+    color: green;
+
+} */
+
+label {
+    font-style: bold;
+
+
+}
+
+.shift-container{
+    display: flex;
+    flex-direction:row;
+
+} 
+
+#avail-shift-container,.myForm2 {
+ 
+ border: 1px double black;
+ padding: 40px;
+
+ width: 800px;
+
+} 
+
+.col{
+    font-weight: bold;
+}
+
+#avail-shift-container label{
+    padding-left: 0.4em;
+
+}
+
+.container-top{
+     
+ border: 1px double black;
+  display: flex; 
+ flex-direction:row;
+ padding: 10px; 
+ justify-content:space-between;
+  /* display:None;   */
+ /* position: absolute;
+ 
+ height: 200px;
+ width: 100%; */
+ 
+}
+
+
+.container-shift-left{
+    border: 1px double red; 
+}
+
+
+.container-emp-right{
+    border: 1px double green; 
+}
+
+.container-table{
+    /* padding: 10px;
+   margin-top:200px;
+   
+   position: absolute; 
+   height: 400px;
+   width: 100%;*/
+    border: 1px double black; 
+    /* display: flex; */
+    /* flex-direction:row; */
+}
+
+.shift_buttons{
+
+ display: flex; 
+ flex-direction:row;
+ justify-content:space-between;
+ gap: 20px;
+
+}
+
+.upper-container{
+
+    display: flex; 
+    flex-direction:row;
+    gap: 50px;
+    
+
+}
+.checkBundle{
+
+    display:none;
+}
+
+
+ #checkbox_emps {
+    margin-right: 20px;
+
+}

@@ -1,0 +1,100 @@
+<html>
+  <link rel = 'stylesheet' type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+<script>
+
+let token=sessionStorage["token"];
+let username=sessionStorage["userName"];
+
+  
+async function loadData()
+  {
+    document.getElementById("username").innerHTML=username;
+    let resp = await fetch('http://127.0.0.1:5000/users', {headers: {"x-access-token": token}});
+    let data = await resp.json();
+
+    if (data=="no actions left")
+    {
+      window.alert("No actions left. Please try again tomorrow");
+      location.href = "login.html";
+    }
+    else
+    {
+        table_users(data);
+    }
+     
+  }
+
+  
+
+  function table_users(users_list)
+    {
+      let bodyObj = document.getElementById("tBody");
+      users_list.forEach(user =>
+        {
+          let tdFullName = document.createElement("td");
+          tdFullName.innerText = user.full_name;
+
+          let tdMaxActions = document.createElement("td");
+          tdMaxActions.innerText = user.maxActions;
+
+          let tdActionsLeft = document.createElement("td");
+          tdActionsLeft.innerText = user.actionAllowd_today;
+
+          let trObj = document.createElement("tr");
+
+          trObj.appendChild(tdFullName);
+          trObj.appendChild(tdMaxActions);
+          trObj.appendChild(tdActionsLeft);
+
+          bodyObj.appendChild(trObj);
+        })
+  }
+
+  function Employees()
+  {
+    document.location.href = "emp.html";
+  }
+
+  function logout()
+  {
+    document.location.href = "login.html";
+  }
+
+
+</script>
+
+<body onload="loadData()">
+
+  <div class="container">
+    <h1>Users </h1> 
+
+    <div class="top">        
+      <button type="button" class="btn btn-dark" id="logout" onClick="Employees()">Employees</button>
+        <div class="repeat_buttons">
+          Hello, <strong><span id="username"> </span></strong>
+            <button type="button" class="btn btn-dark" id="logout" onClick="logout()">Logout</button>
+        </div>
+    </div>                
+    <br/> <br/>    
+  
+    <table class="table table-striped  table-bordered" id= "myTable">
+      <thead>
+        <tr>
+          <th scope="col">Full Name</th>
+          <th scope="col">Max Actions Allowed</th>
+          <th scope="col">Current Actions Allowed Today</th>
+          
+        </tr>
+      </thead>
+      <tbody id="tBody">
+        
+      </tbody>
+    </table>
+  
+  </div>   
+  
+</body>
+
+</html> 

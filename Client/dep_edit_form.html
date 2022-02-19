@@ -1,0 +1,273 @@
+<html>
+    <link rel = 'stylesheet' type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script>
+
+  let token=sessionStorage["token"]
+  let username=sessionStorage["userName"]
+
+  async function Update()
+    {
+
+      const params = new URLSearchParams(location.search);
+      let dep_id = params.get("depid");
+
+      let manager_data= document.getElementById("MangName");
+      let manager_data_text = manager_data.options[manager_data.selectedIndex].text;
+      let manager_data_value = manager_data.options[manager_data.selectedIndex].value;
+
+      let obj = {Department_Name : document.getElementById("dName").value,
+                  Manager_Name :manager_data_text,
+                  Manager_id: manager_data_value,
+                  type:"update_dep"
+                }
+      if (obj["Department_Name"]=='' || obj["Manager_id"]=='' )
+      {
+          window.alert("There is an issue with the input - please check and try again");
+      }
+      else
+      {  
+          let fetchParams = {method : 'PUT',
+                              body : JSON.stringify(obj),
+                              headers : {"Content-Type" : "application/json"}
+                              }
+             
+          let resp = await fetch("http://127.0.0.1:5000/departments/" + dep_id,fetchParams);
+          let data =  await resp.json();
+          if (data=="no actions left")
+          {
+            window.alert("No actions left. Please try again tomorrow");
+            location.href = "login.html";
+          }
+          else
+          {
+            window.alert("The department was updated");
+          }
+      }      
+    }
+
+  async function Delete()
+  {
+    const params = new URLSearchParams(location.search);
+    let dep_id = params.get("depid");
+
+    let fetchParams = {method : 'DELETE',
+                      headers : {"Content-Type" : "application/json"}
+                      }
+
+    let resp = await fetch("http://127.0.0.1:5000/departments/" + dep_id,fetchParams, {headers: {"x-access-token": token}});
+    let data =  await resp.json();
+    
+      if (data=="no actions left")
+      {
+        window.alert("No actions left. Please try again tomorrow");
+        location.href = "login.html";
+      }
+      else
+      {
+        document.location.href ="emp.html";
+      }
+  }
+
+  async function add()
+  {
+    const params = new URLSearchParams(location.search);
+    let dep_id = params.get("depid");
+    var emp_to_add = document.getElementById("Emp_list");
+    var emp_to_add_text=emp_to_add.options[emp_to_add.selectedIndex].text;
+    var emp_to_add_value= emp_to_add.options[emp_to_add.selectedIndex].value;
+
+    let obj = {emp_id : emp_to_add_value,
+              type:"add_emp_to_dep"
+              }
+    if (obj["emp_id"]=='Please Choose')
+    {
+      window.alert("Please select employee from the drop down list");
+    }
+    else
+    {  
+      let fetchParams = {method : 'PUT',
+                        body : JSON.stringify(obj),
+                        headers : {"Content-Type" : "application/json"}
+                        }
+      let resp = await fetch("http://127.0.0.1:5000/departments/" + dep_id,fetchParams, {headers: {"x-access-token": token}});
+      let data =  await resp.json();
+      
+      if (data=="no actions left")
+      {
+        window.alert("No actions left. Please try again tomorrow");
+        location.href = "login.html";
+      }
+      else
+      {
+        window.location.reload(true);
+      }
+    }
+  }
+
+
+  function cancel()
+    {
+      document.location.href = "department.html";
+    }
+
+
+  function add_dep()
+  {
+    document.location.href = "dep_add_form.html"
+  }
+
+
+  async function loadData()
+  {
+    document.getElementById("username").innerHTML=username;
+    const params = new URLSearchParams(location.search);
+    dep_id = params.get("depid");
+
+    let resp = await fetch("http://127.0.0.1:5000/departments/" + dep_id, {headers: {"x-access-token": token}});
+    let data =  await resp.json();
+    if (data=="no actions left")
+      {
+        window.alert("No actions left. Please try again tomorrow");
+        location.href = "login.html";
+      }
+    else
+      {      
+        document.getElementById("dName").value = data[0].dep_details["Name"];
+
+        get_manager_list(data[2]);
+        
+        var manger1 = document.getElementById("MangName");
+        manger1.text=data[0].manager_info[0].First_Name + " " + data[0].manager_info[0].Last_Name; 
+        manger1.value=data[0].manager_info[0].emp_id ; 
+
+        table_emps(data[0].emps_in_dep);
+        emp_list_func(data[1]) ;
+      }
+
+  }
+
+
+  function get_manager_list(manager_list)
+  {
+    let department_list = document.getElementById("MangName");
+    let option = document.createElement("option");
+    
+    manager_list.forEach( m=>
+      {
+        let option = document.createElement("option");
+        option.text = m["First_Name"] + " " + m["Last_Name"];
+        option.value=m["emp_id"]
+        department_list.appendChild(option);
+      })
+  }
+
+  function emp_list_func(emps) 
+  {
+    
+    let emp_list = document.getElementById("Emp_list");
+    let option = document.createElement("option");
+    option.text = "Please Choose";
+    emp_list.appendChild(option);
+    emps.forEach( em=>
+        {
+          let option = document.createElement("option");
+          option.text = em["First_Name"] + " " + em["Last_Name"];
+          option.value=em["emp_id"];
+          emp_list.appendChild(option);
+        })
+  } 
+
+
+  function table_emps(emps)
+  {
+    var bodyRef = document.getElementById('myTable').getElementsByTagName('tBody')[0]; 
+    bodyRef.innerHTML = '';
+    let bodyObj = document.getElementById("tBody")
+    emps.forEach(emp =>
+        {
+          let tdEmpName = document.createElement("td");
+          tdEmpName.innerText=emp["First_Name"]+ " " +emp["Last_Name"];
+          
+          let tdStartYear = document.createElement("td");
+          tdStartYear.innerText=emp["Start_Work_Year"];
+
+          let trObj = document.createElement("tr");
+
+          trObj.appendChild(tdEmpName);
+          trObj.appendChild(tdStartYear);
+      
+          bodyObj.appendChild(trObj);
+        })
+  }
+
+
+</script>
+<body onload = "loadData()">  
+  
+  <h1>Edit Department </h1> 
+  <div class="top">        
+    <span></span>
+    <div class="repeat_buttons">
+      Hello, <strong><span id="username"> </span></strong>
+        <button type="button" class="btn btn-dark" id="logout" onClick="logout()">Logout</button>
+    </div>
+  </div> 
+  <br/> <br/>
+  <form class="myForm" style="padding-left: 40px">
+      <div class="form-row">
+        <div class="col">
+          <label for="Department Name">Department Name</label>
+          <input type="text" id= "dName" class="form-control" placeholder="Department Name">
+        </div>
+        <div class="col">
+          <label for="Manager Name">Manager Name</label>
+          <select name="MangName" id = "MangName"  class="form-control">  </select> 
+        </div>
+      </div> 
+  </form>
+
+      
+  <div class="form-row" style="padding: 40px">
+    <div class="col" id= "button_container">
+        <button type="input" class="btn btn-dark" id = "add_dep" onclick="add_dep()">Add Department</button>
+        <button type="input" class="btn btn-dark" id = "update" onclick="Update()">Update</button>
+        <button type="input" class="btn btn-dark" onclick="Delete()">Delete</button>
+        <button type="input" class="btn btn-dark" onclick="cancel()">Cancel/Department page</button>
+    </div>  
+  </div>
+
+  <div class="shift-container"  style="padding: 40px">
+    <form name="myForm1"  method="post" id= "avail-shift-container" >
+      <label for="Emp_list"><strong>Available employess that can be added to Department: </strong></label>
+      <select name="Emp_list" id = "Emp_list"  class="form-control">  </select> 
+    </form>
+
+    <form class="myForm2" style="padding: 40px">
+      <label for="shifts"><strong>Current Employees:</strong> </label>
+      <table class="table table-striped  table-bordered" id= "myTable">
+        <thead>
+          <tr>
+            <th scope="col">Full Name</th>
+            <th scope="col">Starting Year</th>                
+          </tr>
+        </thead>
+        <tbody id="tBody">
+        
+        </tbody>
+      </table>
+    </form>
+  </div>
+
+
+  <br/>
+  </div class="form-row" style="padding: 40px">
+    <div class="col" id= "button_container">
+      <button type="input" class="btn btn-dark" id = "update" onclick="add()">add</button>   
+    </div>  
+  </div>
+
+
+</body>
+</html>

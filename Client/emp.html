@@ -1,0 +1,183 @@
+
+<html>
+
+<head>
+  <link rel = 'stylesheet' type="text/css" href="style.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+</head>
+
+<script>
+
+  let token=sessionStorage["token"];
+  let username=sessionStorage["userName"];
+
+  async function loadData(is_set_dep_list)
+  {
+    let resp = await fetch('http://127.0.0.1:5000/employees', {headers: {"x-access-token": token}});
+    let emps = await resp.json();
+
+    if (emps=="no actions left")
+    {
+      window.alert("No actions left. Please try again tomorrow");
+      location.href = "login.html";
+    }
+    else
+    {
+        let dep_list = emps[1];
+        let emp_list = emps[0];
+        if (is_set_dep_list==1)
+        {
+          get_dep_list(dep_list);
+          table_emp(emp_list);
+        }
+        else
+        {
+          table_emp(emp_list);
+        }
+        document.getElementById("username").innerHTML=username;
+    } 
+
+  }
+
+  function get_dep_list(dep_list)
+  {
+      
+    let department_list = document.getElementById("myList");
+    let option = document.createElement("option");
+    option.text = "All";
+    department_list.appendChild(option);
+    dep_list.forEach( d=>
+        {
+          let option = document.createElement("option");
+          option.text = d["Name"];
+          option.value=d["dep_id"];
+          department_list.appendChild(option);
+        })
+  }
+
+
+  function table_emp(emps)
+    {
+      var bodyRef = document.getElementById('myTable').getElementsByTagName('tBody')[0]; 
+      bodyRef.innerHTML = '';
+      let bodyObj = document.getElementById("tBody");
+      emps.forEach(emp =>
+        {
+          let tdName = document.createElement("td");
+          let linkObj_Name=document.createElement("a");
+          linkObj_Name.innerText = emp.FullName;
+          linkObj_Name.href="emp_edit_form.html?emp_id="+emp.emp_id;
+          tdName.appendChild(linkObj_Name);
+
+          let tdDepartment = document.createElement("td");
+          let linkObj_dep=document.createElement("a");
+          linkObj_dep.innerText = emp.Department;
+          linkObj_dep.href="dep_edit_form.html?depid="+emp.Department_id;
+          tdDepartment.appendChild(linkObj_dep);
+          
+          let tdShifts = document.createElement("td");
+          emp.shifts.forEach(s=>
+              {
+                  let li_shift_date_time=document.createElement("li");
+                  let linkObj_Shift=document.createElement("a");
+                  linkObj_Shift.innerText=s["Date"] + " " + s["Starting_hour"] + " till " + s["Ending_hour"];
+                  linkObj_Shift.href="shifts_new.html";
+                  li_shift_date_time.appendChild(linkObj_Shift);
+                  
+                  tdShifts.appendChild(li_shift_date_time);
+              })
+
+          let trObj = document.createElement("tr");
+
+          trObj.appendChild(tdName);
+          trObj.appendChild(tdDepartment);
+          trObj.appendChild(tdShifts);
+
+          bodyObj.appendChild(trObj);
+        })
+  }
+
+
+  async function user_dep()
+  {
+    let dep_list = document.getElementById("myList");
+    let dep_filter = dep_list.options[dep_list.selectedIndex].text;
+    if (dep_filter== "All")
+    {
+      loadData(is_set_dep_list=0);
+    }
+    else
+    {
+    let resp1 = await fetch('http://127.0.0.1:5000/employees?dep='+ dep_filter, {headers: {"x-access-token": token}});
+  
+    let emps_per_dep = await resp1.json();
+    table_emp(emps_per_dep[0]);
+    }
+
+  }
+
+  function createNew()
+  {
+    document.location.href = "emp_add_form.html";
+  }
+
+  
+  function users()
+  {
+    document.location.href = "Users.html";
+  }
+  
+  function logout()
+  {
+    document.location.href = "login.html";
+  }
+
+
+</script>
+
+<body onload="loadData(is_get_list=1)">
+
+  <div class="container">
+    <h1>Employees </h1> 
+
+    <div class="top">       
+
+        <div class="repeat_buttons_up ">
+          <button type="button" class="btn btn-dark" onClick="users()">Users</button>
+          <button type="button" class="btn btn-dark" onClick="createNew()">New Employee</button>
+        </div>
+        
+        <div class="repeat_buttons">
+          Hello, <strong><span id="username"> </span></strong>
+            <button type="button" class="btn btn-dark" id="logout" onClick="logout()">Logout</button>
+        </div>
+    </div>                
+    <br/> <br/>
+
+    <label for="Departments">Depatrments</label>
+    <select name="chosen_department" id = "myList" onchange="user_dep()" class="btn btn-dark" >  </select> 
+
+    <br/> <br/>
+    
+  
+    <table class="table table-striped  table-bordered" id= "myTable">
+      <thead>
+        <tr>
+          <th scope="col">FullName</th>
+          <th scope="col">Department</th>
+          <th scope="col">Shifts</th>
+          
+        </tr>
+      </thead>
+      <tbody id="tBody">
+        
+      </tbody>
+    </table>
+  
+  </div>   
+  
+</body>
+
+</html> 
+
